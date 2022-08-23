@@ -1,12 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMove : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 10f;
     [SerializeField] float jumpPower = 10f;
+    [SerializeField] Slider hpSlider;
     bool isJump = false;
+
+    int hp = 20;
+    int maxHp = 20;
+
 
     CharacterController characterController;
 
@@ -31,12 +37,13 @@ public class PlayerMove : MonoBehaviour
 
         if (characterController.collisionFlags == CollisionFlags.Below)
         {
-            if (isJump){
+            if (isJump)
+            {
                 isJump = false;
-                yVelocity = 0;
-            }
-        }
 
+            }
+            yVelocity = 0;
+        }
         if (Input.GetButtonDown("Jump") && !isJump)
         {
             yVelocity = jumpPower;
@@ -50,5 +57,13 @@ public class PlayerMove : MonoBehaviour
         //이동속도에 맞춰 이동
         characterController.Move(direction * moveSpeed * Time.deltaTime);
         //transform.position += direction * moveSpeed * Time.deltaTime;
+
+        // 현재체력 / 최대체력 값을 슬라이더의 value에 적용한다.
+        hpSlider.value = (float)hp / (float)maxHp;
+    }
+
+    public void DamageAction(int damage)
+    {
+        hp -= damage;
     }
 }
