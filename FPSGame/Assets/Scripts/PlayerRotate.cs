@@ -10,6 +10,8 @@ public class PlayerRotate : MonoBehaviour
 
     void Update()
     {
+        if(GameManager.gm.gState != GameManager.GameState.Run) return;
+
         float mouse_X = Input.GetAxis("Mouse X");
 
         //회전값 변수에 마우스 입력 값만큼 미리 누적시킴

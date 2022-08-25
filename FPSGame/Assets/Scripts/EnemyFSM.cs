@@ -29,9 +29,13 @@ public class EnemyFSM : MonoBehaviour
     public int attackPower = 3;
     Vector3 originPos; //초기위치
 
+    Quaternion originRot;
+
     public int hp = 15; //적의 체력
     int maxHp = 15;
     [SerializeField] Slider hpSlider;
+
+    Animator anim; // 좀비의 애니메이터 컴포넌트 변수
 
     // Start is called before the first frame update
     void Start()
@@ -43,6 +47,10 @@ public class EnemyFSM : MonoBehaviour
         cc = GetComponent<CharacterController>();
 
         originPos = transform.position;
+        originRot = transform.rotation;
+
+        // Enemy오브젝트의 자식 Zombie1 오브젝트의 Animator 컴포넌트를 가져옴 
+        anim = transform.GetComponentInChildren<Animator>();
 
     }
 
@@ -67,6 +75,7 @@ public class EnemyFSM : MonoBehaviour
         {
             m_State = EnemyState.Move;
             print("상태 전환: Idle -> Move");
+            anim.SetTrigger("IdleToMove");
         }
     }
 
@@ -86,6 +95,8 @@ public class EnemyFSM : MonoBehaviour
             // 해당 방향으로 적을 이동시킨다.
             Vector3 dir = (player.position - transform.position).normalized;
             cc.Move(dir * moveSpeed * Time.deltaTime);
+
+            transform.forward = dir;
         }
         else
         {
@@ -93,6 +104,8 @@ public class EnemyFSM : MonoBehaviour
             print("상태 전환: Move -> Attack");
             currentTime = attackDelay; //이걸 해주지 않으면? 
             //currentTime이 0부터 시작하므로 적이 붙고나서 2초뒤에 공격하게됨
+
+            anim.SetTrigger("MoveToAttackDelay");
         }
     }
     void Attack()
@@ -103,9 +116,10 @@ public class EnemyFSM : MonoBehaviour
             if (currentTime > attackDelay)
             {
                 // 플레이어의 playerMove 스크립트의 DamageAction함수를 호출한다. (기본적 방법)
-                player.GetComponent<PlayerMove>().DamageAction(attackPower);
+        //          player.GetComponent<PlayerMove>().DamageAction(attackPower);
                 print("공격!");
                 currentTime = 0;
+                anim.SetTrigger("StartAttack");
             }
         }
         else //거리가 2이상이면 상태를 move로 전환
@@ -113,8 +127,14 @@ public class EnemyFSM : MonoBehaviour
             m_State = EnemyState.Move;
             print("상태 전환: Attack->Move");
             currentTime = 0;
+            anim.SetTrigger("AttackToMove");
         }
     }
+
+    public void AttackAction(){
+        player.GetComponent<PlayerMove>().DamageAction(attackPower);
+    }
+
     void Return()
     {
         // 현재 위치와 원래 위치의 거리가 생기면
@@ -129,6 +149,7 @@ public class EnemyFSM : MonoBehaviour
             transform.position = originPos;
             m_State = EnemyState.Idle;
             print("상태 전환: Return -> Idle");
+            anim.SetTrigger("MoveToIdle");
         }
     }
 
@@ -146,12 +167,14 @@ public class EnemyFSM : MonoBehaviour
         {
             m_State = EnemyState.Damaged;
             print("상태 전환: Any State -> Damaged");
+            anim.SetTrigger("Damaged");
             Damaged();
         }
         else
         {
             m_State = EnemyState.Die;
             print("상태 전환: Any State -> Die");
+            anim.SetTrigger("Die");
             Die();
         }
     }
@@ -165,7 +188,7 @@ public class EnemyFSM : MonoBehaviour
     {
         //0.5초 동안 피격 애니메이션 실행 등 데미지를 처리하는 시간만큼
         //시간을 번 뒤 나머지 루틴을 실행
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1.0f);
         m_State = EnemyState.Move;
         print("상태 전환: Damaged -> Move");
     }

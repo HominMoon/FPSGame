@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,11 +9,13 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] float moveSpeed = 10f;
     [SerializeField] float jumpPower = 10f;
     [SerializeField] Slider hpSlider;
+    [SerializeField] GameObject hitEffect; //hit효과 이미지 변수
     bool isJump = false;
 
-    int hp = 20;
+    public int hp = 20;
     int maxHp = 20;
-
+    
+    // static: 공유변수, 클래스변수
 
     CharacterController characterController;
 
@@ -26,6 +29,9 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
+        //
+        if(GameManager.gm.gState != GameManager.GameState.Run) return;
+
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
@@ -65,5 +71,19 @@ public class PlayerMove : MonoBehaviour
     public void DamageAction(int damage)
     {
         hp -= damage;
+        
+        // 죽지 않았다면 피격효과 발생
+        if(hp > 0)
+        {
+            StartCoroutine(PlayHitEffect());
+        }
+    }
+
+    IEnumerator PlayHitEffect()
+    {
+        //0.3초간 hit 이미지 활성화 후 비활성화
+        hitEffect.SetActive(true);
+        yield return new WaitForSeconds(0.3f);
+        hitEffect.SetActive(false);
     }
 }

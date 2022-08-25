@@ -22,6 +22,8 @@ public class PlayerFire : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(GameManager.gm.gState != GameManager.GameState.Run) return;
+
         if (Input.GetMouseButtonDown(1))
         {
             //발사위치에 수류탄 오브젝트 생성

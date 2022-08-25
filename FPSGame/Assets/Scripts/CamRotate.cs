@@ -18,6 +18,7 @@ public class CamRotate : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         float mouse_X = Input.GetAxis("Mouse X");
         float mouse_Y = Input.GetAxis("Mouse Y");
 
