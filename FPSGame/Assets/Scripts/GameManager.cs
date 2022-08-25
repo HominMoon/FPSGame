@@ -50,6 +50,8 @@ public class GameManager : MonoBehaviour
     {
         if(player.hp <= 0)
         {
+            // 플레이어의 애니메이션을 멈춘다.
+            player.GetComponentInChildren<Animator>().SetFloat("MoveMotion", 0f);
             gameLabel.SetActive(true); //상태 텍스트 활성화
             gameText.text = "Game Over"; 
             gameText.color = new Color32(255,0 ,0, 255);

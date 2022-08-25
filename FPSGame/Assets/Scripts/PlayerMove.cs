@@ -22,9 +22,12 @@ public class PlayerMove : MonoBehaviour
     float gravity = -10f; //중력
     float yVelocity = 0; // 수직 속력 변수
 
+    Animator anim;
+
     void Start()
     {
         characterController = GetComponent<CharacterController>();
+        anim = GetComponentInChildren<Animator>();
     }
 
     void Update()
@@ -37,6 +40,9 @@ public class PlayerMove : MonoBehaviour
 
         Vector3 direction = new Vector3(horizontal, 0, vertical);
         direction = direction.normalized; //정규화
+
+        //Move블렌드 트리를 호출하고 벡터의 크기값을 넘겨준다.
+        anim.SetFloat("MoveMotion", direction.magnitude);
 
         // 메인 카메라를 기준으로 방향 전환
         direction = Camera.main.transform.TransformDirection(direction);

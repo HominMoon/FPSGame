@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AI;
 
 public class EnemyFSM : MonoBehaviour
 {
+    NavMeshAgent smith;
+
     enum EnemyState //열거형 변수
     {
         Idle,
@@ -52,6 +55,8 @@ public class EnemyFSM : MonoBehaviour
         // Enemy오브젝트의 자식 Zombie1 오브젝트의 Animator 컴포넌트를 가져옴 
         anim = transform.GetComponentInChildren<Animator>();
 
+        smith = GetComponent<NavMeshAgent>();
+
     }
 
     // Update is called once per frame
@@ -93,10 +98,17 @@ public class EnemyFSM : MonoBehaviour
             //적과 플레이어의 거리가 2미터 이상이면
             //(플레이어 vector - 적 vector)로 방향을 구한다.
             // 해당 방향으로 적을 이동시킨다.
-            Vector3 dir = (player.position - transform.position).normalized;
-            cc.Move(dir * moveSpeed * Time.deltaTime);
 
-            transform.forward = dir;
+            // Vector3 dir = (player.position - transform.position).normalized;
+            // cc.Move(dir * moveSpeed * Time.deltaTime);
+            // transform.forward = dir;
+
+            // 내비게이션의 이동을 멈추고, 경로를 초기화
+            smith.isStopped = true;
+            smith.ResetPath();
+
+            smith.stoppingDistance = attackDistance; //최소 거리를 공격가능 거리로
+            smith.destination = player.position; // 목적지를 플레이어의ㅣ 위치로
         }
         else
         {
@@ -116,7 +128,7 @@ public class EnemyFSM : MonoBehaviour
             if (currentTime > attackDelay)
             {
                 // 플레이어의 playerMove 스크립트의 DamageAction함수를 호출한다. (기본적 방법)
-        //          player.GetComponent<PlayerMove>().DamageAction(attackPower);
+                //          player.GetComponent<PlayerMove>().DamageAction(attackPower);
                 print("공격!");
                 currentTime = 0;
                 anim.SetTrigger("StartAttack");
@@ -131,7 +143,8 @@ public class EnemyFSM : MonoBehaviour
         }
     }
 
-    public void AttackAction(){
+    public void AttackAction()
+    {
         player.GetComponent<PlayerMove>().DamageAction(attackPower);
     }
 
@@ -141,11 +154,18 @@ public class EnemyFSM : MonoBehaviour
         if (Vector3.Distance(transform.position, originPos) > 0.1f)
         {
             // 초기위치로 방향을 구한 뒤 이동
-            Vector3 dir = (originPos - transform.position).normalized;
-            cc.Move(dir * moveSpeed * Time.deltaTime);
+            // Vector3 dir = (originPos - transform.position).normalized;
+            // cc.Move(dir * moveSpeed * Time.deltaTime);
+
+            smith.destination = originPos;
+            smith.stoppingDistance = 0;
         }
         else // 리턴 끝나고 도착
         {
+            smith.isStopped = true;
+            smith.ResetPath();
+
+            hp = maxHp;
             transform.position = originPos;
             m_State = EnemyState.Idle;
             print("상태 전환: Return -> Idle");
@@ -163,6 +183,9 @@ public class EnemyFSM : MonoBehaviour
         }
 
         hp -= hitPower;
+        smith.isStopped = true;
+        smith.ResetPath();
+
         if (hp > 0)
         {
             m_State = EnemyState.Damaged;
